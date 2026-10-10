@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Centres - WarrantyCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <main class="container">
+        <h2>Authorized Service Centres</h2>
+        <p style="color:#94a3b8; margin-bottom: 2rem;">Find official repair partners near your location.</p>
+        
+        <div id="map-container" style="margin-bottom: 2rem; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <iframe id="gmap_canvas" width="100%" height="400" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src=""></iframe>
+        </div>
+        
+        <div id="sc-list" class="grid"></div>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/layout.js"></script>
+    <script>
+        async function loadSC() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const brand = urlParams.get('brand');
+                
+                // Set the Google Maps search query
+                const mapQuery = brand ? `${brand} service center near me` : `electronics service center near me`;
+                document.getElementById('gmap_canvas').src = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&t=&z=12&ie=UTF8&iwloc=&output=embed`;
+                
+                let endpoint = '/service-centres/';
+                if (brand) endpoint += `?brand=${brand}`;
+                
+                const scs = await apiCall(endpoint);
+                const container = document.getElementById('sc-list');
+                
+                if (scs.length === 0) {
+                    container.innerHTML = `<p style="color:#94a3b8; grid-column: 1 / -1;">No authorized service centres found in our local database for this brand. Check the map above for wider results.</p>`;
+                }
+                
+                scs.forEach(sc => {
+                    const el = document.createElement('div');
+                    el.className = 'card';
+                    el.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 1rem;">
+                            <span class="badge badge-active" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">Authorized</span>
+                            <span style="color:#94a3b8; font-size:0.875rem;">★ 4.8</span>
+                        </div>
+                        <h4 style="font-size:1.5rem; margin-bottom: 0.5rem;">${sc.name}</h4>
+                        <p style="color:#94a3b8; font-size:0.95rem; margin-bottom: 1rem;">📍 ${sc.address || sc.city}</p>
+                        <p style="color:#e2e8f0; font-size:0.9rem; margin-bottom: 0;"><strong>Services:</strong> <br>${sc.services ? sc.services.join(', ') : 'General Repairs'}</p>
+                    `;
+                    container.appendChild(el);
+                });
+                
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        
+        loadSC();
+    </script>
+</body>
+</html>

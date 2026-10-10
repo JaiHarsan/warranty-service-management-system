@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product - WarrantyCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <main class="container">
+        <h2>Add New Product</h2>
+        <p style="color:#94a3b8; margin-bottom: 2rem;">Register a new device or appliance to your digital wallet.</p>
+        
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <form id="add-product-form" enctype="multipart/form-data">
+                <div style="margin-bottom: 2rem; text-align: left;">
+                    <label style="display:block; margin-bottom: 0.5rem; color:#cbd5e1; font-weight: 500;">Upload Warranty Card / Invoice (PDF)</label>
+                    <input type="file" id="invoice" accept="application/pdf" required style="margin-bottom: 0;">
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%; font-size: 1.1rem; padding: 1rem;">Upload & Extract</button>
+                <p id="msg" style="margin-top: 1rem;"></p>
+            </form>
+        </div>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/layout.js"></script>
+    <script>
+        document.getElementById('add-product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgEl = document.getElementById('msg');
+            msgEl.innerText = 'Extracting data using AI OCR...';
+            msgEl.style.color = '#38bdf8';
+            
+            const file = document.getElementById('invoice').files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('invoice', file);
+            
+            try {
+                // Perform a standard fetch because our apiCall wraps JSON body primarily.
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/products/upload/', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: formData
+                });
+                
+                if (!res.ok) throw new Error(await res.text());
+                
+                msgEl.innerText = 'Invoice processed successfully! Redirecting...';
+                msgEl.style.color = '#4ade80';
+                setTimeout(() => {
+                    window.location.href = 'products.html';
+                }, 1500);
+            } catch (err) {
+                msgEl.innerText = 'Failed to extract product.';
+                msgEl.style.color = '#f87171';
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>

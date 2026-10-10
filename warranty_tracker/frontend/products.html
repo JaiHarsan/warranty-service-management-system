@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Products - WarrantyCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <main class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h2 style="margin-bottom: 0;">My Product Vault</h2>
+                <p style="color:#94a3b8; margin-top: 0.5rem; margin-bottom: 0;">Manage all your household appliances and devices in one secure place.</p>
+            </div>
+            <button class="btn" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="window.location.href='add-product.html'">+ Add New Product</button>
+        </div>
+        
+        <div id="products-list" class="grid"></div>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/layout.js"></script>
+    <script>
+        async function loadProducts() {
+            try {
+                const products = await apiCall('/products/');
+                const container = document.getElementById('products-list');
+                
+                products.forEach(p => {
+                    const el = document.createElement('div');
+                    el.className = 'card';
+                    el.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 1rem;">
+                            <span class="badge badge-active">Protected</span>
+                            <span style="color:#94a3b8; font-size:0.875rem;">${p.category}</span>
+                        </div>
+                        <h4 style="font-size:1.5rem;">${p.brand}</h4>
+                        <p style="color:#e2e8f0; font-weight:500; margin-bottom: 1.5rem;">${p.product_name}</p>
+                        <div class="actions">
+                            <button class="btn" style="flex: 1;" onclick="window.location.href='product.html?id=${p._id.$oid}'">Manage</button>
+                        </div>
+                    `;
+                    container.appendChild(el);
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        loadProducts();
+    </script>
+</body>
+</html>

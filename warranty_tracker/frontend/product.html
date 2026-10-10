@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - WarrantyCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <main class="container">
+        <div id="p-details" class="card" style="margin-bottom: 2rem;"></div>
+        
+        <div id="warranty-notification"></div>
+        
+        <div class="actions" style="margin-bottom: 2rem;">
+            <button onclick="startHealthCheck()" class="btn" style="flex: 1; padding: 1rem; font-size: 1.1rem;">Run AI Health Check</button>
+            <button onclick="findService()" class="btn" style="flex: 1; padding: 1rem; font-size: 1.1rem; background: linear-gradient(135deg, #10b981, #059669);">Find Service Centres</button>
+        </div>
+        
+        <div id="health-report"></div>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/layout.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const pid = urlParams.get('id');
+        let productData = null;
+        let warrantyData = null;
+        
+        async function loadProduct() {
+            try {
+                productData = await apiCall(`/products/${pid}/`);
+                const warranties = await apiCall('/warranties/');
+                warrantyData = warranties.find(w => w.product_id.$oid === pid);
+                
+                let wBadge = '<span class="badge badge-expired">No Warranty Data</span>';
+                if (warrantyData) {
+                    if (warrantyData.days_remaining > 30) wBadge = `<span class="badge badge-active">${warrantyData.days_remaining} Days Left</span>`;
+                    else if (warrantyData.days_remaining >= 0) wBadge = `<span class="badge badge-expiring">${warrantyData.days_remaining} Days Left!</span>`;
+                    else wBadge = `<span class="badge badge-expired">Expired</span>`;
+                    
+                    if (warrantyData.days_remaining >= 0 && warrantyData.days_remaining < 30) {
+                        document.getElementById('warranty-notification').innerHTML = `
+                            <div class="card alert" style="border-left-width: 6px; margin-bottom: 2rem; background: rgba(245, 158, 11, 0.1);">
+                                <h3 style="margin-top:0; color:#f59e0b;">Warranty Expiring Soon!</h3>
+                                <p style="margin-bottom:0.5rem; color:#f8fafc;">Your warranty expires in <strong>${warrantyData.days_remaining} days</strong>.</p>
+                                <p style="margin-bottom:0; color:#fcd34d;">Recommendation: Please check the product condition. If it is bad, claiming the warranty now is a safe option.</p>
+                            </div>
+                        `;
+                    }
+                }
+                
+                document.getElementById('p-details').innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 1rem;">
+                        ${wBadge}
+                        <span style="color:#94a3b8;">${productData.category}</span>
+                    </div>
+                    <h2 style="margin-bottom: 0.5rem; font-size: 2.5rem; background: linear-gradient(to right, #f8fafc, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${productData.brand}</h2>
+                    <h3 style="margin-top: 0; color: #38bdf8;">${productData.product_name}</h3>
+                `;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        
+        async function startHealthCheck() {
+            try {
+                const resp = await apiCall('/health-check/', 'POST', {
+                    product_id: pid,
+                    responses: {
+                        battery_drain: 'YES',
+                        overheating: 'YES',
+                        unexpected_shutdown: 'YES'
+                    },
+                    symptoms: "The device gets very hot and shuts down."
+                });
+                
+                let alertClass = 'alert';
+                if (resp.risk_level === 'RED') alertClass = 'alert-red';
+                
+                document.getElementById('health-report').innerHTML = `
+                    <div class="card ${alertClass}" style="border-left-width: 6px;">
+                        <h3 style="margin-top:0; color:inherit;">Diagnostic Report</h3>
+                        <p style="margin-bottom: 0.5rem;"><strong style="color: #f8fafc;">Risk Level:</strong> <span class="badge badge-expired" style="background: rgba(0,0,0,0.2)">${resp.risk_level}</span></p>
+                        <p style="margin-bottom: 0.5rem;"><strong style="color: #f8fafc;">Detected Issue:</strong> ${resp.potential_issue}</p>
+                        <p style="margin-bottom: 0;"><strong style="color: #f8fafc;">Action:</strong> ${resp.recommendation}</p>
+                    </div>
+                `;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        
+        function findService() {
+            if (productData) {
+                window.location.href = `service-centres.html?brand=${productData.brand}`;
+            }
+        }
+        
+        loadProduct();
+    </script>
+</body>
+</html>

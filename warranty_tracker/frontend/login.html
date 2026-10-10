@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - WarrantyCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-container">
+            <h2>WarrantyCare</h2>
+            <p style="color: #94a3b8; margin-bottom: 2rem;">Sign in to manage your digital wallet.</p>
+            <form id="login-form">
+                <input type="email" id="email" placeholder="Email Address" required value="rahul@example.com">
+                <input type="password" id="password" placeholder="Password" required value="demo123">
+                <button type="submit" class="btn" style="width: 100%; font-size: 1.1rem; padding: 1rem;">Log In securely</button>
+                <p id="error-msg" class="error"></p>
+            </form>
+        </div>
+    </div>
+    <script src="js/api.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const data = await apiCall('/login/', 'POST', {
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value
+                });
+                localStorage.setItem('token', data.token);
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                document.getElementById('error-msg').innerText = "Invalid credentials";
+            }
+        });
+    </script>
+</body>
+</html>

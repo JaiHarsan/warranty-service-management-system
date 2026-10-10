@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments - WarrantyCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <main class="container">
+        <h2>My Service Appointments</h2>
+        <p style="color:#94a3b8; margin-bottom: 2rem;">Track your prototype service requests and repair center bookings.</p>
+        
+        <div id="appointments-list" class="grid"></div>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/layout.js"></script>
+    <script>
+        async function loadAppointments() {
+            try {
+                const appts = await apiCall('/appointments/');
+                const container = document.getElementById('appointments-list');
+                
+                if (appts.length === 0) {
+                    container.innerHTML = `<p style="color:#94a3b8; grid-column: 1 / -1;">No active service appointments found.</p>`;
+                    return;
+                }
+                
+                appts.forEach(a => {
+                    const el = document.createElement('div');
+                    el.className = 'card';
+                    el.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 1rem;">
+                            <span class="badge badge-expiring">${a.status || 'Pending'}</span>
+                            <span style="color:#94a3b8; font-size:0.875rem;">ID: ${a._id.$oid.substring(0,6).toUpperCase()}</span>
+                        </div>
+                        <h4 style="font-size:1.25rem; color:#38bdf8;">Service Request</h4>
+                        <p style="color:#cbd5e1; margin-bottom: 0.5rem;">Date: ${new Date(a.date).toLocaleDateString()}</p>
+                        <p style="color:#94a3b8; font-size:0.9rem;">Prototype Booking active</p>
+                    `;
+                    container.appendChild(el);
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        loadAppointments();
+    </script>
+</body>
+</html>

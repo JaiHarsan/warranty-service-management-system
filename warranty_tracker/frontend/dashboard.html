@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - WarrantyCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <main class="container">
+        <h2>Dashboard Overview</h2>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="tot-prod">...</div>
+                <div class="stat-label">Total Products</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="active-war" style="background: linear-gradient(to right, #4ade80, #22c55e); -webkit-background-clip: text;">...</div>
+                <div class="stat-label">Active Warranties</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="exp-war" style="background: linear-gradient(to right, #f43f5e, #e11d48); -webkit-background-clip: text;">...</div>
+                <div class="stat-label">Expiring Soon (<30 Days)</div>
+            </div>
+        </div>
+        
+        <div id="dashboard-notifications"></div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h3 style="margin: 0;">My Devices & Appliances</h3>
+            <button class="btn" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="window.location.href='add-product.html'">+ Add New Product</button>
+        </div>
+        
+        <div id="products-list" class="grid"></div>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/layout.js"></script>
+    <script>
+        async function loadDashboard() {
+            try {
+                const products = await apiCall('/products/');
+                const warranties = await apiCall('/warranties/');
+                
+                let activeCount = 0;
+                let expCount = 0;
+                let notificationsHtml = '';
+                
+                warranties.forEach(w => {
+                    if (w.days_remaining > 0) activeCount++;
+                    if (w.days_remaining >= 0 && w.days_remaining < 30) {
+                        expCount++;
+                        // Find related product
+                        const relatedProduct = products.find(p => p._id.$oid === w.product_id.$oid);
+                        const pName = relatedProduct ? relatedProduct.brand + ' ' + relatedProduct.product_name : 'A product';
+                        
+                        notificationsHtml += `
+                            <div class="card alert" style="border-left-width: 6px; margin-bottom: 2rem; background: rgba(245, 158, 11, 0.1);">
+                                <h3 style="margin-top:0; color:#f59e0b;">Warranty Alert: ${pName}</h3>
+                                <p style="margin-bottom:0.5rem; color:#f8fafc;">This product's warranty expires in <strong>${w.days_remaining} days</strong>.</p>
+                                <p style="margin-bottom:0; color:#fcd34d;">Recommendation: Please check the product condition. If it is bad, claiming the warranty now is a safe option.</p>
+                            </div>
+                        `;
+                    }
+                });
+                
+                document.getElementById('tot-prod').innerText = products.length;
+                document.getElementById('active-war').innerText = activeCount;
+                document.getElementById('exp-war').innerText = expCount;
+                
+                document.getElementById('dashboard-notifications').innerHTML = notificationsHtml;
+                
+                const container = document.getElementById('products-list');
+                
+                products.forEach(p => {
+                    const el = document.createElement('div');
+                    el.className = 'card';
+                    el.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 1rem;">
+                            <span class="badge badge-active">Protected</span>
+                            <span style="color:#94a3b8; font-size:0.875rem;">${p.category}</span>
+                        </div>
+                        <h4 style="font-size:1.5rem;">${p.brand}</h4>
+                        <p style="color:#e2e8f0; font-weight:500; margin-bottom: 1.5rem;">${p.product_name}</p>
+                        <button class="btn" style="width:100%" onclick="window.location.href='product.html?id=${p._id.$oid}'">View Details & Health</button>
+                    `;
+                    container.appendChild(el);
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        loadDashboard();
+    </script>
+</body>
+</html>
