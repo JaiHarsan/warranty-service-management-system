@@ -1,5 +1,8 @@
 # 🛠️ Warranty Service Management System
 
+A web-based application designed to help users manage product warranties, maintain product information, schedule service appointments, and access service centre details from one place.
+
+The system combines a web frontend with a Django backend to organize warranty-related information and simplify product service management.
 
 ## 📌 Table of Contents
     
