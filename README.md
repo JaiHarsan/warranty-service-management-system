@@ -5,7 +5,7 @@ A web-based application designed to help users manage product warranties, mainta
 The system combines a web frontend with a Django backend to organize warranty-related information and simplify product service management.
 
 ## 📌 Table of Contents
-  
+    
 - [Overview](#-overview)
 - [Problem Statement](#-problem-statement)
 - [Objectives](#-objectives)
