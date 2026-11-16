@@ -1,4 +1,4 @@
-
+  
 # Warranty Service Management System
 
 A Java-based web application designed to simplify warranty registration, product tracking, and service request management. The system helps customers manage product warranties and enables administrators to handle service requests efficiently.
