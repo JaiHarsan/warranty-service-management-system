@@ -12,7 +12,7 @@ A Java-based web application designed to simplify warranty registration, product
 - **REST APIs:** Handle application operations through RESTful endpoints.
 - **Database Integration:** Store and retrieve application data using MySQL.
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack 
 
 | Technology | Purpose |
 |---|---|
